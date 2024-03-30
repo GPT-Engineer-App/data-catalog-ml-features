@@ -11,40 +11,27 @@ const Index = () => {
   const toast = useToast();
 
   useEffect(() => {
-    // Simulating fetching features from a PostgreSQL database
-    const fetchFeatures = async () => {
-      const response = await fetch("/api/features");
-      const data = await response.json();
-      setFeatures(data);
-    };
-
-    fetchFeatures();
+    const storedFeatures = localStorage.getItem("features");
+    if (storedFeatures) {
+      setFeatures(JSON.parse(storedFeatures));
+    }
   }, []);
 
   const handleInputChange = (e) => {
     setNewFeature({ ...newFeature, [e.target.name]: e.target.value });
   };
 
-  const handleAddFeature = async () => {
-    const response = await fetch("/api/features", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newFeature),
+  const handleAddFeature = () => {
+    const updatedFeatures = [...features, newFeature];
+    setFeatures(updatedFeatures);
+    localStorage.setItem("features", JSON.stringify(updatedFeatures));
+    setNewFeature({ name: "", dataType: "", description: "" });
+    toast({
+      title: "Feature added",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
     });
-
-    if (response.ok) {
-      const data = await response.json();
-      setFeatures([...features, data]);
-      setNewFeature({ name: "", dataType: "", description: "" });
-      toast({
-        title: "Feature added",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
   };
 
   return (
@@ -52,7 +39,7 @@ const Index = () => {
       <Heading as="h1" size="xl" mb={4}>
         Data Catalog
       </Heading>
-      <Text mb={4}>This data catalog explains and documents how to use different features for an ML project. The features are loaded from a PostgreSQL database and can be created through the UI.</Text>
+      <Text mb={4}>This data catalog explains and documents how to use different features for an ML project. The features are stored in the browser's local storage and can be created through the UI.</Text>
 
       <Heading as="h2" size="lg" mb={2}>
         Features
